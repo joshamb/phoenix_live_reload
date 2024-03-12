@@ -8,6 +8,7 @@ defmodule Phoenix.LiveReloader.Channel do
   alias Phoenix.LiveReloader.WebConsoleLogger
 
   @logs :logs
+  @logger_levels [:emergency, :alert, :critical, :error, :warning, :notice, :info, :debug]
 
   def join("phoenix:live_reload", _msg, socket) do
     {:ok, _} = Application.ensure_all_started(:phoenix_live_reload)
@@ -128,5 +129,6 @@ defmodule Phoenix.LiveReloader.Channel do
     else
       %{}
     end
+    |> Map.put(:logger_levels, @logger_levels)
   end
 end

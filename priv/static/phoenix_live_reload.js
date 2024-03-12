@@ -53,6 +53,8 @@ class LiveReloader {
     this.logsEnabled = false
     this.enabledOnce = false
     this.editorURL = null
+    this.minLogLevel = "debug"
+    this.loggerLevels = []
   }
   enable(){
     this.socket.onOpen(() => {
@@ -70,9 +72,10 @@ class LiveReloader {
       let reloadStrategy = reloadStrategies[msg.asset_type] || reloadStrategies.page
       setTimeout(() => reloadStrategy(this.channel), interval)
     })
-    this.channel.on("log", ({msg, level}) => this.logsEnabled && this.log(level, msg))
-    this.channel.join().receive("ok", ({editor_url}) => {
+    this.channel.on("log", ({msg, level}) => this.logsEnabled && this.isMinLogLevel(level) && this.log(level, msg))
+    this.channel.join().receive("ok", ({editor_url, logger_levels}) => {
       this.editorURL = editor_url
+      this.loggerLevels = logger_levels
     })
     this.socket.connect()
   }
@@ -84,6 +87,12 @@ class LiveReloader {
 
   enableServerLogs(){ this.logsEnabled = true }
   disableServerLogs(){ this.logsEnabled = false }
+
+  setMinLogLevel(level){ this.minLogLevel = level }
+
+  isMinLogLevel(level){
+    return this.loggerLevels.indexOf(level) <= this.loggerLevels.indexOf(this.minLogLevel)
+  }
 
   openEditorAtCaller(targetNode){
     if(!this.editorURL){
